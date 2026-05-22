@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Geoportail.lu API v4 - Examples</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">Geoportail.lu <span>API V4 Examples</span></div>
+    </div>
+  </header>
+
+  <div class="layout">
+    <section class="headline">
+      <h1>Luxembourg’s Geospatial API</h1>
+      <p>
+        Explore, code, and deploy with the Geoportail.lu API v4—your gateway to Luxembourg’s
+        official geographic data. From interactive maps to advanced topology tools, our
+        ready-to-use examples help you integrate powerful features in minutes.
+      </p>
+      <p><strong>Copy-paste snippets for markers, layers, search, and more</strong></p>
+      <p>Filter by category, search by keyword, and build faster.</p>
+    </section>
+
+    <section class="toolbar">
+      <div class="toolbar-row" style="margin-bottom:10px;">
+        <input id="search" type="search" placeholder="Search examples, features, keywords...">
+        <span id="count" class="count"></span>
+      </div>
+      <div class="toolbar-row" id="filters"></div>
+    </section>
+
+    <main id="cards" class="cards"></main>
+  </div>
+
+  <script>
+    const examples = [
+      {title: 'Simple map', href: 'simple.html', category: 'Basics', tags: ['map', 'starter'], desc: 'Minimal map initialization.'},
+      {title: 'Simple (variant)', href: 'simple_example.html', category: 'Basics', tags: ['map'], desc: 'Alternative simple example.'},
+      {title: 'Marker', href: 'marker.html', category: 'Markers', tags: ['marker', 'popup'], desc: 'Display a marker on the map.'},
+      {title: 'Marker (variant)', href: 'marker2.html', category: 'Markers', tags: ['marker'], desc: 'Second marker example variant.'},
+      {title: 'Vector', href: 'vector.html', category: 'Data', tags: ['vector', 'layer'], desc: 'Vector layers and styles.'},
+      {title: 'Search', href: 'search.html', category: 'Search', tags: ['search', 'ui'], desc: 'Address search widget.'},
+      {title: 'Geocode', href: 'geocode.html', category: 'Search', tags: ['geocode', 'reverse'], desc: 'Geocoding and reverse geocoding examples.'},
+      {title: 'MyMaps', href: 'mymaps.html', category: 'MyMaps', tags: ['mymaps'], desc: 'Load MyMaps layers.'},
+      {title: 'MyMaps (JS)', href: 'mymaps2.html', category: 'MyMaps', tags: ['mymaps', 'profile'], desc: 'MyMaps variant with interactions.'},
+      {title: 'OL3 API', href: 'ol3_api.html', category: 'OpenLayers', tags: ['ol', 'interop'], desc: 'OpenLayers / GeoAPI interoperability.'},
+
+      {title: 'Topology - Boundaries', href: 'topology/boundaries.html', category: 'Topology', tags: ['topology', 'boundaries'], desc: 'Shared boundaries detection.'},
+      {title: 'Topology - Merge', href: 'topology/merge.html', category: 'Topology', tags: ['topology', 'merge'], desc: 'Geometry merge operation.'},
+      {title: 'Topology - Overlaps', href: 'topology/overlaps.html', category: 'Topology', tags: ['topology', 'overlaps'], desc: 'Overlap detection.'},
+      {title: 'Topology - Vertices', href: 'topology/vertices.html', category: 'Topology', tags: ['topology', 'vertices'], desc: 'Vertex editing and propagation.'},
+      {title: 'Topology - Validate Geometry', href: 'topology/validate.html', category: 'Topology', tags: ['topology', 'validation'], desc: 'Geometry validation and self-intersection diagnostics.'},
+
+      {title: 'API Cookbook - Example 1', href: 'index3/example1.html', category: 'API Cookbook', tags: ['basics'], desc: 'Basic map.'},
+      {title: 'API Cookbook - Example 1a', href: 'index3/example1a.html', category: 'API Cookbook', tags: ['print'], desc: 'Basic map with print button.'},
+      {title: 'API Cookbook - Example 1b', href: 'index3/example1b.html', category: 'API Cookbook', tags: ['mouseposition'], desc: 'Coordinates on map.'},
+      {title: 'API Cookbook - Example 1c', href: 'index3/example1c.html', category: 'API Cookbook', tags: ['mouseposition', 'ui'], desc: 'Coordinates in a panel.'},
+      {title: 'API Cookbook - Example 2', href: 'index3/example2.html', category: 'API Cookbook', tags: ['marker'], desc: 'Simple marker.'},
+      {title: 'API Cookbook - Example 2a', href: 'index3/example2a.html', category: 'API Cookbook', tags: ['marker', 'click'], desc: 'Marker popup on click.'},
+      {title: 'API Cookbook - Example 2b', href: 'index3/example2b.html', category: 'API Cookbook', tags: ['marker'], desc: 'Marker away from center.'},
+      {title: 'API Cookbook - Example 2c', href: 'index3/example2c.html', category: 'API Cookbook', tags: ['popup'], desc: 'Popup rendered in a div.'},
+      {title: 'API Cookbook - Example 2d', href: 'index3/example2d.html', category: 'API Cookbook', tags: ['srs'], desc: 'Multi-SRS markers.'},
+      {title: 'API Cookbook - Example 3', href: 'index3/example3.html', category: 'API Cookbook', tags: ['layers', 'ui'], desc: 'Overlay + managers.'},
+      {title: 'API Cookbook - Example 4', href: 'index3/example4.html', category: 'API Cookbook', tags: ['gpx'], desc: 'GPX loading.'},
+      {title: 'API Cookbook - Example 4b', href: 'index3/example4b.html', category: 'API Cookbook', tags: ['gpx', 'style'], desc: 'GPX with custom style.'},
+      {title: 'API Cookbook - Example 5', href: 'index3/example5.html', category: 'API Cookbook', tags: ['kml'], desc: 'KML loading.'},
+      {title: 'API Cookbook - Example 6', href: 'index3/example6.html', category: 'API Cookbook', tags: ['search'], desc: 'Search inside map.'},
+      {title: 'API Cookbook - Example 7', href: 'index3/example7.html', category: 'API Cookbook', tags: ['search'], desc: 'Search in a div.'},
+      {title: 'API Cookbook - Example 8', href: 'index3/example8.html', category: 'API Cookbook', tags: ['mymaps'], desc: 'Basic MyMaps.'},
+      {title: 'API Cookbook - Example 9', href: 'index3/example9.html', category: 'API Cookbook', tags: ['mymaps', 'profile'], desc: 'MyMaps + profile.'},
+      {title: 'API Cookbook - Example 10', href: 'index3/example10.html', category: 'API Cookbook', tags: ['mymaps', 'profile'], desc: 'Profile opened on load.'},
+      {title: 'API Cookbook - Example 11', href: 'index3/example11.html', category: 'API Cookbook', tags: ['feature', 'parcels'], desc: 'Recenter on feature.'},
+      {title: 'API Cookbook - Example 11b', href: 'index3/example11b.html', category: 'API Cookbook', tags: ['feature', 'click'], desc: 'Feature info on click.'},
+      {title: 'API Cookbook - Example 11c', href: 'index3/example11c.html', category: 'API Cookbook', tags: ['feature', 'popup'], desc: 'Feature info in a div.'},
+      {title: 'API Cookbook - Example 12', href: 'index3/example12.html', category: 'API Cookbook', tags: ['geocode'], desc: 'Direct geocoding.'},
+      {title: 'API Cookbook - Example 13', href: 'index3/example13.html', category: 'API Cookbook', tags: ['reverse-geocode'], desc: 'Reverse geocoding on click.'},
+      {title: 'API Cookbook - Example 14', href: 'index3/example14.html', category: 'API Cookbook', tags: ['popup'], desc: 'Tooltip on map.'},
+      {title: 'API Cookbook - Example 15', href: 'index3/example15.html', category: 'API Cookbook', tags: ['popup', 'ui'], desc: 'Tooltip in a div.'},
+      {title: 'API Cookbook - Example 16', href: 'index3/example16.html', category: 'API Cookbook', tags: ['ol', 'interop'], desc: 'OpenLayers + GeoAPI.'},
+      {title: 'API Cookbook - Example 17', href: 'index3/example17.html', category: 'API Cookbook', tags: ['popup', 'interaction'], desc: 'Programmatic popup toggle.'},
+      {title: 'API Cookbook - Example 18', href: 'index3/example18.html', category: 'API Cookbook', tags: ['vectortile', 'style'], desc: 'External style URL.'},
+      {title: 'API Cookbook - Example 19', href: 'index3/example19.html', category: 'API Cookbook', tags: ['vectortile', 'style'], desc: 'Inline JSON style.'}
+    ];
+
+    const cards = document.getElementById('cards');
+    const filters = document.getElementById('filters');
+    const search = document.getElementById('search');
+    const count = document.getElementById('count');
+    const categories = ['All'].concat([...new Set(examples.map(e => e.category))]);
+    let activeCategory = 'All';
+
+    function buildFilters() {
+      categories.forEach((name) => {
+        const button = document.createElement('button');
+        button.textContent = name;
+        button.className = name === activeCategory ? 'active' : '';
+        button.addEventListener('click', () => {
+          activeCategory = name;
+          buildFilters();
+          render();
+        });
+        filters.appendChild(button);
+      });
+    }
+
+    function render() {
+      filters.innerHTML = '';
+      buildFilters();
+      cards.innerHTML = '';
+
+      const q = search.value.trim().toLowerCase();
+      const results = examples.filter((e) => {
+        const categoryMatch = activeCategory === 'All' || e.category === activeCategory;
+        const text = (e.title + ' ' + e.desc + ' ' + e.tags.join(' ')).toLowerCase();
+        const queryMatch = !q || text.indexOf(q) !== -1;
+        return categoryMatch && queryMatch;
+      });
+
+      count.textContent = results.length + ' / ' + examples.length + ' examples';
+
+      if (!results.length) {
+        cards.innerHTML = '<div class="empty">No examples found for this filter.</div>';
+        return;
+      }
+
+      results.forEach((e) => {
+        const article = document.createElement('article');
+        article.className = 'card';
+        article.innerHTML =
+          '<div class="card-head">' + e.category + '</div>' +
+          '<div class="card-body">' +
+            '<h2 class="card-title">' + e.title + '</h2>' +
+            '<p class="card-desc">' + e.desc + '</p>' +
+            '<div class="tags">' + e.tags.map(tag => '<span class="tag">' + tag + '</span>').join('') + '</div>' +
+            '<div class="card-actions"><a href="' + e.href + '">Open example</a></div>' +
+          '</div>';
+        cards.appendChild(article);
+      });
+    }
+
+    search.addEventListener('input', render);
+    render();
+  </script>
+</body>
+</html>
