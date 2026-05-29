@@ -13,8 +13,7 @@ STATIC_BUILD_DIR="${STATIC_BUILD_DIR:-${DIST_DIR}/build}"
 FONTS_DIR="${FONTS_DIR:-${DIST_DIR}/fonts}"
 WEBFONTS_DIR="${WEBFONTS_DIR:-${DIST_DIR}/webfonts}"
 ASSETS_FONTS_DIR="${ASSETS_FONTS_DIR:-${SCRIPT_DIR}/assets/fonts}"
-BASE_URL="${BASE_URL:-https://apiv4.geoportail.lu/}"
-I18N_URL="${I18N_URL:-https://apiv4.geoportail.lu/static-ngeo/build/fr.json}"
+
 
 mkdir -p "${DIST_DIR}" "${STATIC_BUILD_DIR}" "${FONTS_DIR}" "${WEBFONTS_DIR}"
 
@@ -49,14 +48,22 @@ echo "/*! include apiv4 */" >> "${STATIC_BUILD_DIR}/apiv4-full-async.js2"
 cat "${STATIC_BUILD_DIR}/apiv4.js" >> "${STATIC_BUILD_DIR}/apiv4-full-async.js2"
 mv "${STATIC_BUILD_DIR}/apiv4-full-async.js2" "${STATIC_BUILD_DIR}/apiv4-full-async.js"
 echo "" >> "${STATIC_BUILD_DIR}/apiv4-full-async.js"
-echo "lux.setBaseUrl('${BASE_URL}', 'https');" >> "${STATIC_BUILD_DIR}/apiv4-full-async.js"
-echo "lux.setI18nUrl('${I18N_URL}');" >> "${STATIC_BUILD_DIR}/apiv4-full-async.js"
+cat >> "${STATIC_BUILD_DIR}/apiv4-full-async.js" << 'ENDINIT'
+(function() {
+  var scriptUrl = (document.currentScript && document.currentScript.src) || window.location.href;
+  var scriptOrigin = new URL(scriptUrl, window.location.href).origin;
+  lux.setBaseUrl(scriptOrigin + '/', window.location.protocol.replace(':', ''));
+  lux.setI18nUrl(scriptOrigin + '/static-ngeo/build/fr.json');
+})();
+ENDINIT
 
 npm run build-css
 cp dist/apiv4.css "${STATIC_BUILD_DIR}/"
 cp apiv4loader.js "${DIST_DIR}/"
+cp "${STATIC_BUILD_DIR}/apiv4-full-async.js" "${DIST_DIR}/"
 mkdir -p "${DIST_DIR}/apidoc/dist"
 cp apiv4loader.js "${DIST_DIR}/apidoc/apiv4loader.js"
+cp "${STATIC_BUILD_DIR}/apiv4-full-async.js" "${DIST_DIR}/apidoc/apiv4-full-async.js"
 cp dist/apiv4.css "${DIST_DIR}/apidoc/dist/apiv4.css"
 cp lang_fr.json "${DIST_DIR}/"
 
@@ -74,6 +81,7 @@ VERSIONED_DIST_DIR="${DIST_DIR}/${API_VERSION}"
 mkdir -p "${VERSIONED_DIST_DIR}"
 cp -r "${STATIC_BUILD_DIR}" "${VERSIONED_DIST_DIR}/"
 cp "${DIST_DIR}/apiv4loader.js" "${VERSIONED_DIST_DIR}/"
+cp "${DIST_DIR}/apiv4-full-async.js" "${VERSIONED_DIST_DIR}/"
 mkdir -p "${VERSIONED_DIST_DIR}/apidoc"
 cp -r "${DIST_DIR}/apidoc/." "${VERSIONED_DIST_DIR}/apidoc/"
 cp "${DIST_DIR}/lang_fr.json" "${VERSIONED_DIST_DIR}/"
