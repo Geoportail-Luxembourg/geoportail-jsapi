@@ -252,10 +252,9 @@ function findLayerByName_(name, layers) {
     }
 
     var aliases = undefined;
-    if (layer.metadata && layer.metadata.layer_aliases !== undefined) {
-      aliases = layer.metadata.layer_aliases;
-    } else if (layer.layer_aliases !== undefined) {
-      aliases = layer.layer_aliases;
+    var curMetadata = layer.get('metadata');
+    if (curMetadata && curMetadata['layer_aliases'] !== undefined) {
+      aliases = curMetadata['layer_aliases'];
     }
 
     if (Array.isArray(aliases) && aliases.indexOf(name) !== -1) {
