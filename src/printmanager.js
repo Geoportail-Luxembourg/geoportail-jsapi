@@ -57,6 +57,7 @@ const FEAT_STYLE_PROP_PREFIX = '_ngeo_style_';
 export const PRINT_LAYOUTS = [
   'A4 landscape',
   'A4 portrait',
+  'A4 portrait AI',
   'A3 landscape',
   'A3 portrait',
   'A2 landscape',

@@ -608,6 +608,29 @@
           bgLayerStyle: customJson
         });
       }
+    },
+    '20': {
+      title: 'Example 20 — print a map with a description',
+      description: 'Adds a button to print the current map.',
+      run: function () {
+        setExtra('<button id="printBtn">Print map</button><textarea id="descriptionText" rows="4" cols="50"><h1>Lorem ipsum dolor sit amet</h1>, <b>consectetur adipiscing elit</b>. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p><p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</textarea><div id="status">Print status</div>');
+        var map = baseMap();
+        document.getElementById('printBtn').addEventListener('click', function () {
+          document.getElementById('status').innerText = 'Printing...';
+          const callback = () => {
+            document.getElementById('status').innerText = 'Done';
+          };
+
+          map.printWithOptions({
+            name: 'The page title can be set here',
+            layout: 'A4 portrait AI',
+            scale: undefined,
+            callback: callback,
+            format: 'pdf',
+            description: document.getElementById('descriptionText').value
+          });
+        });
+      }
     }
   };
 
