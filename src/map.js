@@ -762,7 +762,6 @@ class Map extends OpenLayersMap {
     listen(this.getLayers(), CollectionEventType.ADD, function(event) {
       // Check for exclusions when a layer is added
       this.checkForExclusion_(event);
-      
       // Add listener for visibility changes
       var layer = event.element;
       if (layer.on) {
@@ -1019,12 +1018,13 @@ class Map extends OpenLayersMap {
    * [{'url': 'http://url1', 'html'},{'url': 'http://url2' 'pdf'}]
    * @param {function()=} callback Optional callback function.
    * @param {String=} format the output format. Default value is pdf.
+   * @param {String=} description the description of the map. Only for sdedicated print layouts. Default value is empty.
    * @example
    * map.print();
    * @export
    * @api
    */
-  print(name, layout, scale, firstPagesUrls, callback, format) {
+  print(name, layout, scale, firstPagesUrls, callback, format, description) {
     var dpi = 127;
     if (format === undefined || format === null) {
       format = 'pdf';
@@ -1098,6 +1098,9 @@ class Map extends OpenLayersMap {
       'queryResults': null,
       'firstPagesUrls': firstPagesUrls
     });
+    if (description !== undefined && description !== null) {
+      spec.attributes.description = description;
+    }
     // create print report
     pm.createReport(spec).then((resp) => {
       if (resp.status === 200) {
@@ -1109,6 +1112,144 @@ class Map extends OpenLayersMap {
         });
       }
     });
+  }
+
+  /**
+   * @typedef {Object} PrintOptions
+   * @property {string} [name] The title of the map.
+   * @property {string} [layout] The layout of the map.
+   * @property {number} [scale] The scale to use.
+   * @property {Array<Object>} [firstPagesUrls] An array containing urls and type of pages that will be introduced at the beginning of the pdf.
+   * @property {function()} [callback] Optional callback function.
+   * @property {string} [format] The output format. Default value is pdf.
+   * @property {string} [description] The description of the map. Only for dedicated print layouts. Default value is empty.
+   */
+
+  /**
+   * Prints the current map using an options object for better readability and maintainability.
+   * @param {PrintOptions} options The print options.
+   * @export
+   * @api
+   */
+  async printWithOptions(options = {}) {
+    const {
+      name = '',
+      layout,
+      scale,
+      firstPagesUrls = [],
+      callback,
+      format = 'pdf',
+      description
+    } = options;
+
+    const pm = new PrintManager(lux.printUrl, this);
+    const curLayout = this.determineLayout_(layout);
+    const dataOwners = this.getDataOwners_();
+    // Calculate scale if not provided, same as original print method
+    const calculatedScale = scale !== undefined ? scale : this.calculateScale_();
+    // Handle longUrl the same way as original print method
+    let longUrl = this.stateManager_.getUrl();
+    if (longUrl.toLowerCase().indexOf('http') !== 0 &&
+        longUrl.toLowerCase().indexOf('//') === 0) {
+      longUrl = 'http:' + longUrl;
+    }
+
+    const spec = this.createPrintSpec_(pm, curLayout, calculatedScale, 127, format, {
+      'disclaimer': lux.translate('www.geoportail.lu est un portail d\'accès aux informations géolocalisées, données et services qui sont mis à disposition par les administrations publiques luxembourgeoises. Responsabilité: Malgré la grande attention qu\’elles portent à la justesse des informations diffusées sur ce site, les autorités ne peuvent endosser aucune responsabilité quant à la fidélité, à l\'exactitude, à l\'actualité, à la fiabilité et à l\'intégralité de ces informations. Information dépourvue de foi publique. Droits d\'auteur: Administration du Cadastre et de la Topographie. http://g-o.lu/copyright'),
+      'scaleTitle': lux.translate('Echelle approximative 1:'),
+      'appTitle': lux.translate('Le géoportail national du Grand-Duché du Luxembourg'),
+      'scale': calculatedScale,
+      'name': name,
+      'longUrl': longUrl,
+      'lang': lux.lang,
+      'legend': '',
+      'scalebar': {'geodetic': true},
+      'dataOwner': dataOwners.join(' '),
+      'dateText': lux.translate('Date d\'impression: '),
+      'queryResults': null,
+      'firstPagesUrls': firstPagesUrls
+    });
+
+    // Handle description the same way as original print method
+    if (description !== undefined && description !== null) {
+      spec.attributes.description = description;
+    }
+
+    // Track with piwik, same as original print method
+    var piwikUrl = 'http://apiv4.geoportail.lu/print/' + curLayout.replace(' ', '/');
+    window['_paq'].push(['trackLink', piwikUrl, 'download']);
+
+    try {
+      const resp = await pm.createReport(spec);
+      if (resp.status === 200) {
+        const data = await resp.json();
+        this.getStatus_(pm, data.ref, callback);
+      }
+    } catch (error) {
+      console.error('Error during print:', error);
+    }
+  }
+
+  /**
+   * Détermine le layout en fonction de la taille de la carte.
+   * @param {string} layout Le layout souhaité.
+   * @return {string} Le layout à utiliser.
+   * @private
+   */
+  determineLayout_(layout) {
+    if (layout && PRINT_LAYOUTS.includes(layout)) {
+      return layout;
+    }
+
+    const size = this.getSize();
+    return size && size[0] > size[1] ? 'A4 landscape' : 'A4 portrait';
+  }
+
+  /**
+   * Récupère les propriétaires des données des couches.
+   * @return {Array<string>} Les propriétaires des données.
+   * @private
+   */
+  getDataOwners_() {
+    const dataOwners = [];
+    this.getLayers().forEach((layer) => {
+      const source = layer.getSource ? layer.getSource() : undefined;
+      if (source) {
+        const attributions = source.getAttributions();
+        if (attributions) {
+          attributions().forEach((attribution) => dataOwners.push(attribution));
+        }
+      }
+    });
+    return dataOwners.filter((item, pos, self) => self.indexOf(item) === pos);
+  }
+
+  /**
+   * Crée la spécification d'impression.
+   * @param {PrintManager} pm Le gestionnaire d'impression.
+   * @param {string} layout Le layout.
+   * @param {number} scale L'échelle.
+   * @param {number} dpi La résolution DPI.
+   * @param {string} format Le format de sortie.
+   * @param {Object} attributes Les attributs supplémentaires.
+   * @return {Object} La spécification d'impression.
+   * @private
+   */
+  createPrintSpec_(pm, layout, scale, dpi, format, attributes) {
+    return pm.createSpec(scale, dpi, layout, format, attributes);
+  }
+
+  /**
+   * Calcule l'échelle en fonction de la résolution actuelle.
+   * @return {number} L'échelle calculée.
+   * @private
+   */
+  calculateScale_() {
+    const resolution = this.getView().getResolution();
+    const dpi = 25.4 / 0.28;
+    const mpu = this.getView().getProjection().getMetersPerUnit();
+    const inchesPerMeter = 1000 / 25.4;
+    return Math.round(parseFloat(resolution.toString()) * mpu * inchesPerMeter * dpi);
   }
 
   /**
