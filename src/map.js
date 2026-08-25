@@ -759,7 +759,16 @@ class Map extends OpenLayersMap {
 
     this.getTargetElement().classList.add('lux-map');
 
-    listen(this.getLayers(), CollectionEventType.ADD, this.checkForExclusion_, this);
+    listen(this.getLayers(), CollectionEventType.ADD, function(event) {
+      // Check for exclusions when a layer is added
+      this.checkForExclusion_(event);
+      
+      // Add listener for visibility changes
+      var layer = event.element;
+      if (layer.on) {
+        listen(layer, 'change:visible', this.checkForExclusionOnVisibilityChange_, this);
+      }
+    }.bind(this));
 
     /**
      * @private
@@ -915,7 +924,6 @@ class Map extends OpenLayersMap {
   /**
    * Draw a polygon on the map.
    * @param {function()=|undefined} onDrawEnd the callback function.
-   * @param {boolean|undefined} queryLayer.
    * @export
    * @api
    */
@@ -1000,10 +1008,10 @@ class Map extends OpenLayersMap {
    * Prints the current map.
    * @param {string=} name The title of the map.
    * @param {string=} layout The layout of the map.
-   * Default is A4 landscape or A4 portrait depending on the map size.
-   * Available values are : A4 landscape, A4 portrait, A3 landscape,
-   * A3 portrait, A2 landscape, A2 portrait, A1 landscape, A1 portrait,
-   * A0 landscape, A0 portrait
+   *   Default is A4 landscape or A4 portrait depending on the map size.
+   *   Available values are : A4 landscape, A4 portrait, A3 landscape,
+   *   A3 portrait, A2 landscape, A2 portrait, A1 landscape, A1 portrait,
+   *   A0 landscape, A0 portrait
    * @param {number=} scale The scale to use.
    * @param {Array<Object>=} firstPagesUrls An array containing urls and
    * type of pages that will be introduced at the beginning of the pdf.
@@ -1068,7 +1076,6 @@ class Map extends OpenLayersMap {
         longUrl.toLowerCase().indexOf('//') === 0) {
       longUrl = 'http:' + longUrl;
     }
-
     if (scale === undefined || scale === null) {
       const resolution = this.getView().getResolution();
       const dpi = 25.4 / 0.28;
@@ -1161,7 +1168,6 @@ class Map extends OpenLayersMap {
         longUrl.toLowerCase().indexOf('//') === 0) {
       longUrl = 'http:' + longUrl;
     }
-
     var spec = pm.createSpec(scale, printDpi, curLayout, format, {
       'disclaimer': disclaimer,
       'scaleTitle': scaleTitle,
@@ -1264,6 +1270,7 @@ class Map extends OpenLayersMap {
     lux.lang = lang.toLowerCase();
     var curLang = lang.toLowerCase();
     if (curLang in lux.languages) {
+      this.i18nPromise = Promise.resolve(lux.languages[curLang]);
       if (this.layerManagerControl_ !== null &&
         this.layerManagerControl_ !== undefined) {
         this.layerManagerControl_.update();
@@ -1617,6 +1624,9 @@ class Map extends OpenLayersMap {
     }
     const mvtLayer_ = this.prependMapBoxBackgroundLayer(target, mapBoxStyle, mapBoxStyleXYZ);
     mvtLayer_.set('name', layerConf ? layerConf.name : layer);
+    if (layerConf && layerConf.metadata) {
+      mvtLayer_.set('metadata', layerConf.metadata);
+    }
     return (mvtLayer_);
   }
 
@@ -1633,7 +1643,6 @@ class Map extends OpenLayersMap {
     }
 
     var exclusion1 = layer1.get('metadata')['exclusion'];
-
 
     if (exclusion1 === undefined) {
       return;
@@ -1656,13 +1665,45 @@ class Map extends OpenLayersMap {
       if (lux.intersects(exclusion1, exclusion2)) {
         // layer to exclude is not the current base layer
         if (i !== 0) {
-          this.removeLayer(layer2);
+          //this.removeLayer(layer2);
+          layer2.setVisible(false);
         } else {
+          const currentBg = this.getLayers().item(0);
+          if (currentBg && currentBg !== this.blankLayer_) {
+            if (typeof currentBg.setVisible === 'function') {
+              currentBg.setVisible(false);
+            }
+            if (currentBg.getMapBoxMap && currentBg.getMapBoxMap()) {
+              const canvas = currentBg.getMapBoxMap().getCanvas();
+              if (canvas) {
+                canvas.style.display = 'none';
+              }
+            }
+          }
+          this.mvtLayer_ = undefined;
           this.getLayers().setAt(0, this.blankLayer_);
         }
         console.error('Layer "' + layer2.get('name') + '" cannot be used with "' + layer1.get('name') + '"');
       }
     }
+  }
+
+  /**
+   * Handle layer visibility changes to check for exclusions.
+   * When a layer becomes visible, check if it conflicts with other visible layers.
+   * @private
+   * @param {Event} event The change:visible event
+   */
+  checkForExclusionOnVisibilityChange_(event) {
+    var layer = event.target;
+
+    // Only check for exclusions if the layer is becoming visible
+    if (!layer.getVisible()) {
+      return;
+    }
+
+    // Delegate to the main checkForExclusion_ method
+    this.checkForExclusion_({element: layer});
   }
 
   /**
@@ -1696,7 +1737,7 @@ class Map extends OpenLayersMap {
    * @api
    */
   addBgSelector(target, bglayers) {
-    this.layersPromise.then(function () {
+    Promise.all([this.i18nPromise, this.layersPromise]).then(function () {
       if (!this.layersConfig) {
         return;
       }
@@ -1760,16 +1801,22 @@ class Map extends OpenLayersMap {
 
         var selectedConf = this.layersConfig[select.value];
         var mvtKey = this.getMVTKey_(selectedConf);
+        var newBg;
         if (mvtKey !== null) {
           this.mvtLayer_ = this.MVTLayerFactory_(undefined, selectedConf);
-          this.getLayers().setAt(0, this.mvtLayer_);
+          newBg = this.mvtLayer_;
+          this.getLayers().setAt(0, newBg);
           this.mvtLayer_.setVisible(true);
         } else if (select.value === 'blank') {
-          this.getLayers().setAt(0, this.blankLayer_);
+          newBg = this.blankLayer_;
+          this.getLayers().setAt(0, newBg);
         } else {
-          this.getLayers().setAt(
-            0, lux.WMTSLayerFactory(this.layersConfig[select.value], 1, true)
-          );
+          newBg = lux.WMTSLayerFactory(this.layersConfig[select.value], 1, true);
+          this.getLayers().setAt(0, newBg);
+        }
+
+        if (newBg && newBg.get && newBg.get('metadata') !== undefined) {
+          this.checkForExclusion_({element: newBg});
         }
       }.bind(this));
 
