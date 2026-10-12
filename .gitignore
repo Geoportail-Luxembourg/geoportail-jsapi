@@ -1,0 +1,36 @@
+# Dependencies
+node_modules/
+package-lock.json
+
+# Build and distribution
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Secrets and keys
+*.pem
+*.key
+*.secret
+*.token
+
+# Database and backup files
+*.sql
+*.sqlite
+*.db
+*.backup
+
+# Logs and temporary files
+*.log
+*.tmp
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+
+# Documentation artifacts
+jsdoc/api/template/jsdocOpenLayers.js

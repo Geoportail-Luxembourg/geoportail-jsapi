@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test WFS Parcelles – Géoportail API v4</title>
+  <script src="../../../../apiv4loader.js"  type="text/javascript"></script>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<header>
+  <div>
+    <div class="subtitle">Géoportail API v4 – OGC API Features</div>
+    <h1>Parcelles FLIK – Édition topologique</h1>
+  </div>
+</header>
+
+<div id="toolbar">
+  <button id="btn-load" onclick="loadParcelles()">⬇ Charger les parcelles FLIK</button>
+  <div class="sep"></div>
+  <button id="btn-select" onclick="setMode('select')" class="active" title="Cliquer sur une parcelle pour la sélectionner">🖱 Sélection</button>
+  <button id="btn-edit" onclick="setMode('edit')" title="Modifier les sommets des parcelles sélectionnées">✏ Modifier</button>
+  <button id="btn-editfree" onclick="setMode('editfree')" title="Modifier sans propager aux parcelles adjacentes — chevauchement signalé en orange">✏ Modifier (libre)</button>
+  <button id="btn-editstrict" onclick="setMode('editstrict')" title="Modifier sans propager aux parcelles adjacentes — chevauchement interdit et rejeté">✏ Modifier (strict)</button>
+  <button id="btn-draw" onclick="setMode('draw')" title="Dessiner une nouvelle parcelle (clic pour chaque sommet, double-clic pour terminer)">&#xff0b; Créer</button>
+  <button id="btn-split" onclick="setMode('split')" title="Couper une parcelle sélectionnée en dessinant une ligne (double-clic pour terminer)">&#9985; Couper</button>
+  <button id="btn-hole" onclick="setMode('hole')" title="Insérer un trou dans la parcelle sélectionnée (dessiner le contour du trou)">&#9711; Trouer</button>
+  <button id="btn-merge" onclick="mergeSelectedFeatures()" title="Fusionner les parcelles sélectionnées en une seule">▣ Fusionner</button>
+  <button id="btn-clear" onclick="clearSelection()">&#x2716; Désélectionner</button>
+  <div class="sep"></div>
+  <div class="legend">
+    <div class="legend-item"><div class="legend-color" style="background:#fffbe6;border-color:#f5a623"></div> Parcelle</div>
+    <div class="legend-item"><div class="legend-color" style="background:#ffd0d0;border-color:#e00"></div> Sélectionnée</div>
+    <div class="legend-item"><div class="legend-color" style="background:#d0e8ff;border-color:#00c"></div> Voisine partagée</div>
+    <div class="legend-item"><div class="legend-color" style="background:rgba(255,80,0,0.35);border-color:#ff4400"></div> Chevauchement</div>
+  </div>
+  <div class="sep"></div>
+  <label class="toggle-label" title="Afficher ou masquer les géométries adjacentes détectées par JSTS">
+    <input type="checkbox" id="chk-neighbours" checked onchange="toggleNeighboursDisplay(this.checked)">
+    Afficher voisines
+  </label>
+  <div id="status">Prêt. Chargez les parcelles.</div>
+</div>
+
+<div id="main">
+  <div id="map"></div>
+
+  <div id="sidebar">
+    <h2>Parcelles chargées <span id="count-badge" class="badge">0</span></h2>
+    <div id="info-box">
+      <b>Source :</b> <a href="https://features.geoportail.lu/collections/1637" target="_blank">OGC API Features – FLIK</a><br>
+      Chargement par bbox de la vue courante (max 200 items).
+      <br><br>
+      <b>Topologie JSTS :</b> sélectionnez une parcelle, ses voisines partageant
+      une frontière commune sont détectées et éditables simultanément.
+    </div>
+    <div id="feature-list"></div>
+    <div id="props-panel" style="display:none">
+      <h3>Propriétés de la sélection</h3>
+      <table id="props-table"></table>
+    </div>
+  </div>
+</div>
+
+<div id="loading">⏳ Chargement OGC API Features...</div>
+
+<div id="notif-panel" style="display:none"></div>
+
+<script src="app.js"></script>
+
+</body>
+</html>

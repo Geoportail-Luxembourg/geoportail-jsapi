@@ -1,0 +1,47 @@
+{
+    "opts": {
+        "recurse": true,
+        "template": "jsdoc/api/template",
+        "tutorials": "jsdoc/api/tutorials"
+    },
+    "tags": {
+        "allowUnknownTags": true
+    },
+    "source": {
+        "includePattern": ".+\\.js(doc)?$",
+        "include": [
+            "src/"
+        ]
+    },
+    "plugins": [
+        "jsdoc-plugin-typescript",
+        "plugins/markdown",
+        "jsdoc/api/plugins/api",
+        "jsdoc/api/plugins/inline-options"
+    ],
+    "typescript": {
+        "moduleRoot": "src/"
+    },
+    "markdown": {
+        "parser": "gfm"
+    },
+    "stability": {
+      "levels": [
+        "deprecated",
+        "experimental",
+        "unstable",
+        "stable",
+        "frozen",
+        "locked"
+      ]
+    },
+    "templates": {
+        "cleverLinks": true,
+        "monospaceLinks": true,
+        "default": {
+            "outputSourceFiles": false
+        },
+        "applicationName": "Luxembourg API"
+    },
+    "jsVersion": 180
+}

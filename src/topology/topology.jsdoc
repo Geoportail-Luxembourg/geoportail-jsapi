@@ -1,0 +1,22 @@
+/**
+ * Topology helpers exposed on `lux.topology`.
+ *
+ * @namespace lux.topology
+ * @api stable
+ * @property {function(Array<ol.Feature>, Object=): Array<ol.Feature>} propagateSharedVertices Propagate moved shared vertices to neighbours.
+ * @property {function(ol.Feature, Array<ol.Feature>, Object=): Array<ol.Feature>} findTopologicalNeighbours Find adjacent features.
+ * @property {function(ol.Map, ol.layer.Vector, (Array<ol.Feature>|function()), Object=): ol.interaction.Select} createSelectInteraction Create a topology-aware select interaction.
+ * @property {function(ol.Map, ol.source.Vector, Object=): ol.interaction.Snap} createSnapInteraction Create a snap interaction and add it to the map.
+ * @property {function(ol.Map, Array<ol.Feature>, Array<ol.Feature>, Object=): ol.interaction.Modify} createTopologicalModifyInteraction Create a topology-propagating modify interaction.
+ * @property {function(ol.Map, Array<ol.Feature>, Array<ol.Feature>, Object=): ol.interaction.Modify} createFreeModifyInteraction Create a modify interaction that only reports overlaps.
+ * @property {function(ol.Map, Array<ol.Feature>, Array<ol.Feature>, Object=): ol.interaction.Modify} createStrictModifyInteraction Create a modify interaction that rolls back overlaps.
+ * @property {function(ol.Map, ol.source.Vector, Object=): ol.interaction.Draw} createDrawInteraction Create a draw interaction and add it to the map.
+ * @property {function(ol.Feature, ol.geom.LineString, Object=): {updatedFeature: ol.Feature, newFeatures: Array<ol.Feature>, piecesCount: number}} splitFeatureWithLine Split a polygon with a line.
+ * @property {function(ol.Feature, ol.geom.Polygon, Object=): boolean} insertHole Insert a hole into a polygon feature.
+ * @property {function(Array<ol.Feature>, Object=): {primaryFeature: ol.Feature, removedFeatures: Array<ol.Feature>, totalSurface: number}} mergeFeatures Merge several features into one.
+ * @property {function(ol.geom.Geometry, ol.geom.Geometry): {isEmpty: boolean, deltaArea: number}} computeGeomDiff Compare two geometries and return diff metrics.
+ * @property {function(ol.geom.Geometry, Object=): {isValid: boolean, hasSelfIntersection: boolean, fixed: boolean, message: string, fixedGeometry: (ol.geom.Geometry|null)}} validateGeometry Validate a geometry and optionally compute a fix.
+ * @property {function(ol.geom.Geometry): Array<Array<number>>} getAllCoords Flatten geometry coordinates.
+ * @property {function(Array<number>, number=): string} vertexKey Build a rounded vertex key.
+ * @property {function(ol.Feature, Array<ol.Feature>, number=): {overlaps: Array<ol.Feature>, selfIntersectionDetected: boolean, invalidGeometryDetected: boolean, message: string}} checkOverlapsNeighboursDetailed Check overlaps with diagnostics.
+ */
