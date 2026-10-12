@@ -1018,7 +1018,7 @@ class Map extends OpenLayersMap {
    * [{'url': 'http://url1', 'html'},{'url': 'http://url2' 'pdf'}]
    * @param {function()=} callback Optional callback function.
    * @param {String=} format the output format. Default value is pdf.
-   * @param {String=} description the description of the map. Only for sdedicated print layouts. Default value is empty.
+   * @param {String=} description the description of the map. Only for dedicated print layouts. Default value is empty.
    * @example
    * map.print();
    * @export

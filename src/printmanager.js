@@ -58,6 +58,7 @@ export const PRINT_LAYOUTS = [
   'A4 landscape',
   'A4 portrait',
   'A4 portrait AI',
+  'A4 landscape AI',
   'A3 landscape',
   'A3 portrait',
   'A2 landscape',
