@@ -1,8 +1,21 @@
+import * as ol from 'ol';
+import * as olControl from 'ol/control';
+import * as olExtent from 'ol/extent';
+import * as olGeom from 'ol/geom';
+import * as olInteraction from 'ol/interaction';
+import * as olLayer from 'ol/layer';
+import * as olSource from 'ol/source';
+import * as olFormat from 'ol/format';
+import * as olStyle from 'ol/style';
+import * as olProj from 'ol/proj';
+import * as olCoordinate from 'ol/coordinate';
+import * as olEvents from 'ol/events';
+import * as olRender from 'ol/render';
 import proj4 from 'proj4';
 import {register as registerProj4} from 'ol/proj/proj4';
 import LuxMap from './map.js';
 import {get as getProjection, transform as transformCoordinate} from 'ol/proj';
-import * as olProj from 'ol/proj';
+import * as olProj2 from 'ol/proj';
 import TileLayer from 'ol/layer/Tile';
 import WMTSSource from 'ol/source/WMTS';
 import {padNumber} from 'ol/string';
@@ -29,6 +42,9 @@ import Circle from 'ol/style/Circle';
 import Text from 'ol/style/Text';
 import Feature from 'ol/Feature';
 import Collection from 'ol/Collection';
+import Overlay from 'ol/Overlay';
+import Map from 'ol/Map';
+import View from 'ol/View';
 import OlProjection from 'ol/proj/Projection';
 import {format as formatCoordinate} from 'ol/coordinate';
 import topologyCore from './topology/core.js';
@@ -76,13 +92,32 @@ const lux = {};
 
 lux.Map = LuxMap;
 
-/**
- * Bundled OpenLayers classes, mirroring the structure of the standalone ol.js global.
- * Use this instead of loading a separate ol.js to avoid duplicate OL instances.
- * @export
- */
-lux.ol = {
-  geom: {
+const compatOl = {
+  ...ol,
+  Map,
+  View,
+  Overlay,
+  Feature,
+  Collection,
+  control: olControl,
+  extent: olExtent,
+  geom: olGeom,
+  interaction: olInteraction,
+  layer: olLayer,
+  source: olSource,
+  format: olFormat,
+  style: olStyle,
+  proj: {
+    ...olProj,
+    Projection: OlProjection,
+    proj4: {
+      register: registerProj4,
+    },
+  },
+  coordinate: olCoordinate,
+  events: olEvents,
+  render: olRender,
+  geom_: {
     Point,
     LineString,
     LinearRing,
@@ -92,18 +127,18 @@ lux.ol = {
     MultiPolygon,
     GeometryCollection,
   },
-  source: {
+  source_: {
     Vector: VectorSource,
   },
-  layer: {
-    Vector: VectorLayer,
+  layer_: {
     Tile: TileLayer,
+    Vector: VectorLayer,
     Image: ImageLayer,
   },
-  format: {
+  format_: {
     GeoJSON,
   },
-  style: {
+  style_: {
     Style,
     Fill,
     Stroke,
@@ -111,19 +146,15 @@ lux.ol = {
     Circle,
     Text,
   },
-  proj: {
-    ...olProj,
-    Projection: OlProjection,
-    proj4: {
-      register: registerProj4,
-    },
-  },
-  interaction: {
+  interaction_: {
     Modify: ModifyInteraction,
   },
-  Feature: Feature,
-  Collection: Collection,
 };
+
+lux.ol = compatOl;
+if (typeof window !== 'undefined') {
+  window.ol = compatOl;
+}
 
 lux.topology = {
   ...topologyCore,
@@ -192,7 +223,6 @@ lux.languages = {};
  * @type {string?}
  */
 lux.wmtsCrossOrigin = 'anonymous';
-
 
 /**
  * @param {ol.layer.Layer} layer Layer.
@@ -377,7 +407,6 @@ lux.lang = 'fr';
  */
 lux.popupSize = null;
 
-
 /**
  * Returns the translated string if available.
  * @param {string} text The text to translate.
@@ -509,7 +538,6 @@ lux.buildPopupLayout = function(html, closeCallback, title) {
   return container;
 };
 
-
 /**
  * @param {string} one The first list of exclusions.
  * @param {string} two The second list of exclusions.
@@ -522,7 +550,6 @@ lux.intersects = function(one, two) {
     return arr2.indexOf(item) > -1;
   });
 };
-
 
 /**
  * Mapping from layer name/alias to MapBox style name.
@@ -685,7 +712,6 @@ lux.WMSLayerFactory = function(config, opacity, visible) {
   });
   return layer;
 };
-
 
 /**
  * It geocodes an address. The found position is transmitted to the callback function as parameter.

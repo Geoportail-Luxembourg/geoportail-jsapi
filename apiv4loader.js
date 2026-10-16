@@ -105,7 +105,6 @@
   appendStyle(buildRoot + 'apiv4.css');
 
   loadScripts([
-    buildRoot + 'ol.js',
     buildRoot + 'proj4.js',
     buildRoot + 'jsts.min.js',
     buildRoot + 'auto-complete.min.js',
