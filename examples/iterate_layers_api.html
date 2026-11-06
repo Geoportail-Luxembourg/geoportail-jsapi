@@ -71,13 +71,13 @@
           var template = $("#usageList").html();
           var i18n;
           var layersJson;
-          var i18nPromise = this.i18nPromise = fetch("/static-ngeo/not_used/build/en.json").then(function(resp) {
+          var i18nPromise = this.i18nPromise = fetch("https://map.geoportail.lu/assets/locales/layers.en.json").then(function(resp) {
               return resp.json();
           }).then(function(json) {
-              i18n = json['en'];
+              i18n = json;
           }.bind(this));
 
-          var layersPromise = fetch("https://map.geoportail.lu/jsapilayers").then(function(resp) {
+          var layersPromise = fetch("https://apiv4.geoportail.lu/jsapilayers").then(function(resp) {
             return resp.json();
           }).then(function(json) {
             layersJson = json;
