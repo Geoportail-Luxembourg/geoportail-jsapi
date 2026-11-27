@@ -560,7 +560,7 @@ class Map extends OpenLayersMap {
       'visitwasserbillig.lu', 'visitatertwark.lu', 'visit-clervaux.lu', 'visit-diekirch.lu', 'visit-vianden.lu', 'minetttrail.lu', 'minettcycle.lu',
       'public.lu', 'etat.lu', 'inondations.lu', 'visit-fouhren.lu', 'visit-hoscheid.lu', 'visitjunglinster.lu', 'visitreisdorf.lu', 'visitrosportmompach.lu',
       'mae.lu', 'gouvernement.lu', 'meteolux.lu', 'luxemburg.infomax.online', 'data.public.lu', 'test.data.public.lu', 'www.camping.lu',
-      'main.camprilux.infomax.online', 'camprilux.infomax.online', 'camprilux.infomax.dev', 'int.geoportail.lu'];
+      'main.camprilux.infomax.online', 'camprilux.infomax.online', 'camprilux.infomax.dev', 'int.geoportail.lu', 'geoportai.geoportail.lu', 'geoportai.geoportal.lu'];
 
     /**
      * @private
